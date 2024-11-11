@@ -1,0 +1,19 @@
+{
+  "name": "background-jobs",
+  "version": "1.0.0",
+  "description": "cron task runner",
+  "scripts": {
+    "dev": "tsx --watch index.ts",
+    "start": "tsx index.ts"
+  },
+  "author": "Tilak Sasmal",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/node": "^22.8.4"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "node-cron": "^3.0.3",
+    "tsx": "^4.19.2"
+  }
+}
