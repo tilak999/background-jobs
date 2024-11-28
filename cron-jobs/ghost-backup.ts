@@ -1,54 +1,8 @@
 import mysqldump from "mysqldump"
 import fs from "fs"
 import path from "path"
-
-interface Blogs {
-    id: string
-    dataDirectory: string
-    dbName: string
-}
-
-interface BackupRecordData {
-    size: number
-    status: "Running" | "Completed" | "Failed"
-    endAt: Date
-}
-
-async function getBlogs(): Promise<{ data: Blogs[] }> {
-    if (process.env.API_ENDPOINT) {
-        const headers = new Headers()
-        headers.set("x-api-key", process.env.API_KEY || "")
-        const response = await fetch(process.env.API_ENDPOINT || "", {
-            method: "GET",
-            headers,
-        })
-        return response.json()
-    }
-    throw "API_ENDPOINT ENV var not set"
-}
-
-async function updateBackupRecord(id: string, data?: BackupRecordData) {
-    if (process.env.API_ENDPOINT) {
-        const headers = new Headers()
-        headers.set("x-api-key", process.env.API_KEY || "")
-        if (!data) {
-            const response = await fetch(process.env.API_ENDPOINT, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ id }),
-            })
-            return response.json()
-        } else {
-            const response = await fetch(process.env.API_ENDPOINT, {
-                method: "PATCH",
-                headers,
-                body: JSON.stringify({ id, ...data }),
-            })
-            return response.json()
-        }
-    }
-    throw "API_ENDPOINT ENV var not set"
-}
+import { zipDirectory } from "../lib/archiver"
+import { Blogs, getBlogs, updateBackupRecord } from "../lib/utils";
 
 async function createBackup(blog: Blogs) {
     let data:any = null;
@@ -62,6 +16,7 @@ async function createBackup(blog: Blogs) {
             const dest = path.join(BACKUP_DATA_DIRECTORY, dataDirectory)
             fs.cpSync(src, path.join(dest, "ghost_data"), { recursive: true })
             await createDump(path.join(dest, `database_dump.sql`), dbName)
+            await zipDirectory(dest, BACKUP_DATA_DIRECTORY)
             await updateBackupRecord(data.id, {
                 size: 0,
                 status: "Completed",
@@ -82,12 +37,12 @@ async function createBackup(blog: Blogs) {
 }
 
 function createDump(filepath, dbName) {
-    const { DB_HOST, DB_USER, DB_PASSWORD } = process.env
+    const { DATABASE_USER, DATABASE_HOST, DATABASE_PASSWORD } = process.env
     mysqldump({
         connection: {
-            host: DB_HOST || "localhost",
-            user: DB_USER || "root",
-            password: DB_PASSWORD || "",
+            host: DATABASE_HOST || "localhost",
+            user: DATABASE_USER || "root",
+            password: DATABASE_PASSWORD || "",
             database: dbName,
         },
         dumpToFile: filepath,
