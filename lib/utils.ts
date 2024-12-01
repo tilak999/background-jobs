@@ -24,26 +24,35 @@ export interface BackupRecordData {
     endAt: Date
 }
 
+async function addStartOfBackupEntry(id: string) {
+    const endpoint = process.env.API_ENDPOINT + "/api/backup"
+    const headers = new Headers()
+    headers.set("x-api-key", process.env.API_KEY || "")
+    const response = await fetch(endpoint, {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ id }),
+    })
+    return response.json()
+}
+
+async function addEndOfBackupEntry(id: string, data: BackupRecordData) {
+    const endpoint = process.env.API_ENDPOINT + "/api/backup"
+    const headers = new Headers()
+    headers.set("x-api-key", process.env.API_KEY || "")
+    const response = await fetch(endpoint, {
+        method: "PATCH",
+        headers,
+        body: JSON.stringify({ id, ...data }),
+    })
+    return response.json()
+}
+
 export async function updateBackupRecord(id: string, data?: BackupRecordData) {
-    if (process.env.API_ENDPOINT) {
-        const endpoint = process.env.API_ENDPOINT + "/api/backup"
-        const headers = new Headers()
-        headers.set("x-api-key", process.env.API_KEY || "")
-        if (!data) {
-            const response = await fetch(endpoint, {
-                method: "POST",
-                headers,
-                body: JSON.stringify({ id }),
-            })
-            return response.json()
-        } else {
-            const response = await fetch(endpoint, {
-                method: "PATCH",
-                headers,
-                body: JSON.stringify({ id, ...data }),
-            })
-            return response.json()
-        }
+    if (!process.env.API_ENDPOINT) throw "API_ENDPOINT ENV var not set"
+    const response = data ? await addEndOfBackupEntry(id, data) : await addStartOfBackupEntry(id)
+    if(response.error) {
+        throw Error(JSON.stringify(response.error))
     }
-    throw "API_ENDPOINT ENV var not set"
+    return response.data
 }
