@@ -18,7 +18,6 @@ export async function getBlogs(): Promise<{ data: Blogs[] }> {
     throw "API_ENDPOINT ENV var not set"
 }
 
-
 export interface BackupRecordData {
     size: number
     status: "Running" | "Completed" | "Failed"
@@ -27,17 +26,18 @@ export interface BackupRecordData {
 
 export async function updateBackupRecord(id: string, data?: BackupRecordData) {
     if (process.env.API_ENDPOINT) {
+        const endpoint = process.env.API_ENDPOINT + "/api/backup"
         const headers = new Headers()
         headers.set("x-api-key", process.env.API_KEY || "")
         if (!data) {
-            const response = await fetch(process.env.API_ENDPOINT + "/api/backup", {
+            const response = await fetch(endpoint, {
                 method: "POST",
                 headers,
                 body: JSON.stringify({ id }),
             })
             return response.json()
         } else {
-            const response = await fetch(process.env.API_ENDPOINT, {
+            const response = await fetch(endpoint, {
                 method: "PATCH",
                 headers,
                 body: JSON.stringify({ id, ...data }),
