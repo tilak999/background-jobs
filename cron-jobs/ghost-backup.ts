@@ -86,6 +86,6 @@ async function takeGhostBackup(logger: Logger) {
 }
 
 export default {
-    schedule: process.env.BACKUP_CRON || "0 0 23 * *",
+    schedule: process.env.BACKUP_CRON || "0 0 * * *",
     job: takeGhostBackup,
 }
