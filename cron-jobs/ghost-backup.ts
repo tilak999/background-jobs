@@ -4,6 +4,7 @@ import path from "path"
 import { zipDirectory } from "../lib/archiver"
 import { Blogs, getBlogs, updateBackupRecord } from "../lib/utils"
 import { Logger } from "pino"
+import { Job } from "../types/cron"
 
 interface BackupInterface {
     dataDir: string
@@ -88,4 +89,4 @@ async function takeGhostBackup(logger: Logger) {
 export default {
     schedule: process.env.BACKUP_CRON || "0 0 * * *",
     job: takeGhostBackup,
-}
+} as Job

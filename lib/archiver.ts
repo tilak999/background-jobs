@@ -14,8 +14,7 @@ export function zipDirectory(sourceDir, outPath) {
       archive
         .directory(sourceDir, false)
         .on('error', err => reject(err))
-        .pipe(stream)
-      ;
+        .pipe(stream);
   
       stream.on('close', () => resolve());
       archive.finalize();
