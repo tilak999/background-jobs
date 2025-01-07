@@ -56,3 +56,9 @@ export async function updateBackupRecord(id: string, data?: BackupRecordData) {
     }
     return response.data
 }
+
+export function validateEnvParams() {
+    if (!process.env.API_KEY) throw "API_KEY is not defined"
+    if (!process.env.API_ENDPOINT) throw "API_ENDPOINT is not defined"
+    return { API_KEY: process.env.API_KEY, API_ENDPOINT: process.env.API_ENDPOINT }
+}
